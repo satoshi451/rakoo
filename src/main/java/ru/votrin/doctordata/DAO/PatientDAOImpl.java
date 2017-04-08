@@ -1,8 +1,9 @@
 package ru.votrin.doctordata.DAO;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.apache.commons.dbcp.BasicDataSource;
 import ru.votrin.doctordata.model.Patient;
-import org.springframework.jdbc.*;
+
 
 import java.util.LinkedList;
 
@@ -12,12 +13,15 @@ import java.util.LinkedList;
 public class PatientDAOImpl implements PatientDAO {
 
     private JdbcTemplate jdbcTemplate;
+    private void setDataSource(BasicDataSource dataSource) {
+
+    }
 
     @Override
     public LinkedList<Patient> findAll() {
         String st = "select * from cases.patients";
 
         LinkedList<Patient> data = jdbcTemplate.query(st, new PatientMapper());
-        return null;
+        return data;
     }
 }
