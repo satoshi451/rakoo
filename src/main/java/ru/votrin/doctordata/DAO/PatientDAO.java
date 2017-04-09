@@ -9,5 +9,7 @@ import java.util.List;
  */
 public interface PatientDAO {
     List<Patient> findAll();
+
+    List<Patient> findWithFilter(String filterText);
 }
 
