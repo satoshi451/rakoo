@@ -34,10 +34,11 @@ public class PatientDAOImpl implements PatientDAO {
     @Override
     public List<Patient> findWithFilter(String filterText) {
         StringBuilder st = new StringBuilder("select ptnt_id, first_name, second_name, patronic, birth, sex from cases.patients p ");
-                st.append(" where lower(p.first_name) like lower('").append(filterText).append("')");
-                st.append("or lower(p.second_name) like lower('").append(filterText).append("')");
-                st.append("or lower(p.patronic) like lower('").append(filterText).append("')");
+                st.append(" where lower(p.first_name) like lower('%").append(filterText).append("%')");
+                st.append(" or lower(p.second_name) like lower('%").append(filterText).append("%')");
+                st.append(" or lower(p.patronic) like lower('%").append(filterText).append("%')");
 
+        System.out.println(st.toString());
         List<Patient> data = jdbcTemplate.query(st.toString(), new PatientMapper());
 
         return data;
