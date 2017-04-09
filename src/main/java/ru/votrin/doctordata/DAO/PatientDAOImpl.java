@@ -43,4 +43,16 @@ public class PatientDAOImpl implements PatientDAO {
 
         return data;
     }
+
+    @Override
+    public void createPatient(String fname,
+                              String sname,
+                              String lname,
+                              String birth,
+                              String sex) {
+        StringBuilder sb = new StringBuilder("select cases.create_patient('");
+        sb.append(fname).append("','").append(lname).append("','").append(sname).append("','").append(birth).append("','").append(sex).append("')");
+        System.out.println(sb.toString());
+        jdbcTemplate.execute(sb.toString());
+    }
 }

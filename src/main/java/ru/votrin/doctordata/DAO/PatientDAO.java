@@ -11,5 +11,11 @@ public interface PatientDAO {
     List<Patient> findAll();
 
     List<Patient> findWithFilter(String filterText);
+
+    void createPatient(String fname,
+                       String sname,
+                       String lname,
+                       String birth,
+                       String sex);
 }
 
