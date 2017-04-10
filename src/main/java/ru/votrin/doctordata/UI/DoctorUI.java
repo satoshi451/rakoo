@@ -15,6 +15,8 @@ import ru.votrin.doctordata.model.Patient;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.vaadin.ui.Alignment.MIDDLE_RIGHT;
+
 /**
  * Created by wiseman on 08.04.17.
  */
@@ -35,6 +37,7 @@ public class DoctorUI extends UI{
     private Window wnd;
     private DateField birth;
     private ComboBox<String> sexField;
+    private DoctorMenu menuBar;
 
     @Override
     protected void init(VaadinRequest request) {
@@ -64,10 +67,16 @@ public class DoctorUI extends UI{
         searchLine.addComponent(addButton);
         searchLine.setWidth("100%");
 
+        menuBar = new DoctorMenu();
+        menuBar.setWidth("100%");
+
         VerticalLayout mainLayout = new VerticalLayout();
+
+ //       mainLayout.addComponents(menuBar);
         mainLayout.addComponent(searchLine);
         mainLayout.addComponentsAndExpand(grid);
         listPatient("");
+
         setContent(mainLayout);
     }
 
@@ -81,7 +90,7 @@ public class DoctorUI extends UI{
 
         wnd.setModal(true);
         wnd.setWidth("500");
-        wnd.setHeight("500");
+        wnd.setHeight("400");
 
         fname = new TextField();
         sname = new TextField();
@@ -89,22 +98,37 @@ public class DoctorUI extends UI{
         sexField = new ComboBox<String>();
         sexField.setItems("Муж", "Жен");
 
-        layout.addComponent(new Label("Имя:"));
-        layout.addComponentsAndExpand(fname);
-        layout.addComponent(new Label("Фамилия:"));
-        layout.addComponentsAndExpand(lname);
-        layout.addComponent(new Label("Отчество:"));
-        layout.addComponentsAndExpand(sname);
+        fname.setWidth("350px");
+        sname.setWidth("350px");
+        lname.setWidth("350px");
+
+        HorizontalLayout fnameLine = new HorizontalLayout();
+        HorizontalLayout snameLine = new HorizontalLayout();
+        HorizontalLayout lnameLine = new HorizontalLayout();
+
+        fnameLine.addComponent(new Label("Имя:"));
+        fnameLine.addComponents(fname);
+
+        snameLine.addComponent(new Label("Отчество:"));
+        snameLine.addComponents(sname);
+
+        lnameLine.addComponent(new Label("Фамилия:"));
+        lnameLine.addComponents(lname);
 
         Button addPatient = new Button("Добавить пациента");
         birth = new DateField();
         birth.setDateFormat("dd-MM-yyyy");
-        birth.setPlaceholder("dd-MM-yyyy");
-        layout.addComponent(sexField);
-        layout.addComponent(birth);
+        birth.setPlaceholder("дд-мм-гггг");
 
         addPatient.addClickListener(this::createPatient);
         addPatient.addStyleName(ValoTheme.BUTTON_FRIENDLY);
+
+        layout.addComponentsAndExpand(fnameLine);
+        layout.addComponentsAndExpand(snameLine);
+        layout.addComponentsAndExpand(lnameLine);
+
+        layout.addComponent(sexField);
+        layout.addComponent(birth);
         layout.addComponentsAndExpand(addPatient);
         addWindow(wnd);
     }
