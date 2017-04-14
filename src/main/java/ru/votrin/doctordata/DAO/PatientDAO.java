@@ -1,5 +1,6 @@
 package ru.votrin.doctordata.DAO;
 
+import ru.votrin.doctordata.model.PatientDiagnos;
 import ru.votrin.doctordata.model.Patient;
 
 import java.util.List;
@@ -17,5 +18,7 @@ public interface PatientDAO {
                        String lname,
                        String birth,
                        String sex);
+
+    List<PatientDiagnos> getDiagnosByPtntId(Long ptnt_id);
 }
 

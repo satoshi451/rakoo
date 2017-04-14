@@ -6,16 +6,15 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.ValueChangeMode;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
+import com.vaadin.ui.components.grid.ItemClickListener;
 import com.vaadin.ui.themes.ValoTheme;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import ru.votrin.doctordata.DAO.PatientDAO;
 import ru.votrin.doctordata.model.Patient;
 
-import java.util.LinkedList;
 import java.util.List;
 
-import static com.vaadin.ui.Alignment.MIDDLE_RIGHT;
 
 /**
  * Created by wiseman on 08.04.17.
@@ -38,6 +37,7 @@ public class DoctorUI extends UI{
     private DateField birth;
     private ComboBox<String> sexField;
     private DoctorMenu menuBar;
+    private PatientLayout patientDataLayout;
 
     @Override
     protected void init(VaadinRequest request) {
@@ -70,14 +70,30 @@ public class DoctorUI extends UI{
         menuBar = new DoctorMenu();
         menuBar.setWidth("100%");
 
-        VerticalLayout mainLayout = new VerticalLayout();
+        VerticalLayout dataLayout = new VerticalLayout();
 
  //       mainLayout.addComponents(menuBar);
-        mainLayout.addComponent(searchLine);
-        mainLayout.addComponentsAndExpand(grid);
+        dataLayout.addComponent(searchLine);
+        dataLayout.addComponentsAndExpand(grid);
         listPatient("");
 
-        setContent(mainLayout);
+        HorizontalLayout content = new HorizontalLayout();
+        content.addComponent(dataLayout);
+        content.setSizeFull();
+
+        patientDataLayout = new PatientLayout();
+        content.addComponent(patientDataLayout);
+
+        dataLayout.setSizeFull();
+//        patientDataLayout.setSizeFull();
+
+        grid.addItemClickListener((ItemClickListener<Patient>) itemClick -> {
+            patientDataLayout.setPatient(itemClick.getItem());
+            System.out.println(itemClick.getItem());
+        });
+
+
+        setContent(content);
     }
 
     private void addPatientDialog(Button.ClickEvent e) {
@@ -130,6 +146,7 @@ public class DoctorUI extends UI{
         layout.addComponent(sexField);
         layout.addComponent(birth);
         layout.addComponentsAndExpand(addPatient);
+
         addWindow(wnd);
     }
 

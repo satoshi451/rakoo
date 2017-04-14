@@ -1,5 +1,7 @@
 package ru.votrin.doctordata.model;
 
+
+
 import java.sql.Date;
 
 /**
@@ -20,6 +22,18 @@ public class Patient {
     private String patronic;
     private Date birth;
     private String sex;
+
+
+    @Override
+    public String toString() {
+        return "Patient{" +
+                "ptnt_id=" + ptnt_id +
+                ", first_name='" + first_name + '\'' +
+                ", second_name='" + second_name + '\'' +
+                ", patronic='" + patronic + '\'' +
+                ", birth=" + birth +
+                ", sex='" + sex + '\'' + '}';
+    }
 
     public Patient(Long ptnt_id,
                    String first_name,
@@ -82,4 +96,5 @@ public class Patient {
     public void setSex(String sex) {
         this.sex = sex;
     }
+
 }

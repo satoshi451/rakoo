@@ -3,10 +3,12 @@ package ru.votrin.doctordata.DAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.votrin.doctordata.model.PatientDiagnos;
 import ru.votrin.doctordata.model.Patient;
 
-
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by wiseman on 08.04.17.
@@ -44,15 +46,26 @@ public class PatientDAOImpl implements PatientDAO {
         return data;
     }
 
+
     @Override
     public void createPatient(String fname,
                               String sname,
                               String lname,
                               String birth,
                               String sex) {
-        StringBuilder sb = new StringBuilder("select cases.create_patient('");
-        sb.append(fname).append("','").append(lname).append("','").append(sname).append("','").append(birth).append("','").append(sex).append("')");
-        System.out.println(sb.toString());
-        jdbcTemplate.execute(sb.toString());
+        StringBuilder st = new StringBuilder("select cases.create_patient('");
+        st.append(fname).append("','").append(lname).append("','").append(sname).append("','").append(birth).append("','").append(sex).append("')");
+        System.out.println(st.toString());
+        jdbcTemplate.execute(st.toString());
+    }
+
+    @Override
+    public List<PatientDiagnos> getDiagnosByPtntId(Long ptnt_id) {
+        StringBuilder st = new StringBuilder("select * from");
+        st.append(" select h.ptnt_ptnt_id, max(h.hist_num) hn from cases.patient_history h");
+        st.append(" group by h.ptnt_ptnt_id) as latest ");
+        st.append(" join cases.patient_history h on h.hist_num = latest.hn");
+        st.append(" where h.ptnt_ptnt_id = ").append(ptnt_id);
+        return jdbcTemplate.query(st.toString(), new DiagnosMapper());
     }
 }
