@@ -11,8 +11,14 @@ import java.sql.SQLException;
  */
 public class DiagnosMapper implements RowMapper<PatientDiagnos> {
     @Override
-    public PatientDiagnos mapRow(ResultSet resultSet,
+    public PatientDiagnos mapRow(ResultSet rs,
                                  int i) throws SQLException {
-        return null;
+        return new PatientDiagnos(rs.getLong("ptnt_ptnt_id"),
+                                    rs.getDate("incoming_date"),
+                                    rs.getDate("outcoming_date"),
+                                    rs.getString("diagnos"),
+                                    rs.getDate("operation_date"),
+                                    rs.getString("localisation"),
+                                    rs.getInt("hist_num"));
     }
 }

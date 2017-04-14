@@ -13,16 +13,16 @@ import java.util.List;
  */
 public class PatientLayout extends VerticalLayout {
 
-    @Autowired
-    private PatientDAO patientDAO;
+    private final PatientDAO patientDAO;
 
     private final TextField firstName;
     private final TextField lastName;
     private final TextField secondName;
-    private final Grid diagnosGrid;
+    private Grid<PatientDiagnos> diagnosGrid;
     private Patient patient;
 
-    public PatientLayout() {
+    @Autowired
+    public PatientLayout(PatientDAO patientDAO) {
         firstName = new TextField();
         lastName = new TextField();
         secondName = new TextField();
@@ -44,20 +44,31 @@ public class PatientLayout extends VerticalLayout {
         infoSpace.addComponent(hll);
 
         addComponent(infoSpace);
-        diagnosGrid = new Grid<PatientDiagnos>();
 
         initDiagnosGrid();
-
-        addComponent(diagnosGrid);
+        addComponentsAndExpand(diagnosGrid);
+        this.patientDAO = patientDAO;
     }
 
     private void initDiagnosGrid() {
+        diagnosGrid = new Grid<>(PatientDiagnos.class);
+        diagnosGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+/*
+        diagnosGrid.setColumns("ptnt_ptnt_id",
+                                "incoming_date",
+                                "outcoming_date",
+                                "diagnos",
+                                "operation_date",
+                                "licalisation",
+                                "hist_num");
+*/
         if (null != patient) {
             List<PatientDiagnos> recs = patientDAO.getDiagnosByPtntId(patient.getPtnt_id());
             diagnosGrid.setItems(recs);
+
+            System.out.println(recs);
         }
     }
-
 
     public void setPatient(Patient patient) {
         this.patient = patient;

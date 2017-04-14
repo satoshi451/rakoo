@@ -61,11 +61,13 @@ public class PatientDAOImpl implements PatientDAO {
 
     @Override
     public List<PatientDiagnos> getDiagnosByPtntId(Long ptnt_id) {
-        StringBuilder st = new StringBuilder("select * from");
-        st.append(" select h.ptnt_ptnt_id, max(h.hist_num) hn from cases.patient_history h");
+        StringBuilder st = new StringBuilder("select h.* from");
+        st.append(" (select h.ptnt_ptnt_id, max(h.hist_num) hn from cases.patient_history h");
         st.append(" group by h.ptnt_ptnt_id) as latest ");
         st.append(" join cases.patient_history h on h.hist_num = latest.hn");
         st.append(" where h.ptnt_ptnt_id = ").append(ptnt_id);
+
+        System.out.println(st.toString());
         return jdbcTemplate.query(st.toString(), new DiagnosMapper());
     }
 }

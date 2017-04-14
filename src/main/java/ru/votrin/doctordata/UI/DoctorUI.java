@@ -81,7 +81,8 @@ public class DoctorUI extends UI{
         content.addComponent(dataLayout);
         content.setSizeFull();
 
-        patientDataLayout = new PatientLayout();
+        patientDataLayout = new PatientLayout(patientDAO);
+
         content.addComponent(patientDataLayout);
 
         dataLayout.setSizeFull();
