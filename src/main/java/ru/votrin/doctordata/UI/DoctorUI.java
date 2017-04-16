@@ -28,15 +28,12 @@ public class DoctorUI extends UI{
     private PatientDAO patientDAO;
 
     private Grid<Patient> grid;
-    private TextField filter;
-    private Button addButton;
     private TextField fname;
     private TextField lname;
     private TextField sname;
     private Window wnd;
     private DateField birth;
     private ComboBox<String> sexField;
-    private DoctorMenu menuBar;
     private PatientLayout patientDataLayout;
 
     @Override
@@ -48,18 +45,19 @@ public class DoctorUI extends UI{
         grid.getColumn("second_name").setCaption("Фамилия");
         grid.getColumn("birth").setCaption("Дата рождения");
         grid.getColumn("sex").setCaption("Пол");
+        grid.setSelectionMode(Grid.SelectionMode.MULTI);
 
         grid.removeColumn("ptnt_id");
         grid.setWidth("100%");
 
         HorizontalLayout searchLine = new HorizontalLayout();
 
-        filter = new TextField();
+        TextField filter = new TextField();
         filter.setPlaceholder("Поиск...");
         filter.setValueChangeMode(ValueChangeMode.LAZY);
         filter.addValueChangeListener(e -> listPatient(e.getValue()));
 
-        addButton = new Button(VaadinIcons.PLUS);
+        Button addButton = new Button(VaadinIcons.PLUS);
         addButton.addStyleName(ValoTheme.BUTTON_PRIMARY);
         addButton.addClickListener(this::addPatientDialog);
 
@@ -67,7 +65,7 @@ public class DoctorUI extends UI{
         searchLine.addComponent(addButton);
         searchLine.setWidth("100%");
 
-        menuBar = new DoctorMenu();
+        DoctorMenu menuBar = new DoctorMenu();
         menuBar.setWidth("100%");
 
         VerticalLayout dataLayout = new VerticalLayout();
@@ -80,19 +78,18 @@ public class DoctorUI extends UI{
         HorizontalLayout content = new HorizontalLayout();
         content.addComponent(dataLayout);
         content.setSizeFull();
+        content.setSpacing(false);
 
         patientDataLayout = new PatientLayout(patientDAO);
 
         content.addComponent(patientDataLayout);
 
         dataLayout.setSizeFull();
-//        patientDataLayout.setSizeFull();
 
         grid.addItemClickListener((ItemClickListener<Patient>) itemClick -> {
             patientDataLayout.setPatient(itemClick.getItem());
             System.out.println(itemClick.getItem());
         });
-
 
         setContent(content);
     }

@@ -1,5 +1,6 @@
 package ru.votrin.doctordata.DAO;
 
+import ru.votrin.doctordata.UI.PatientLayout;
 import ru.votrin.doctordata.model.PatientDiagnos;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -13,12 +14,12 @@ public class DiagnosMapper implements RowMapper<PatientDiagnos> {
     @Override
     public PatientDiagnos mapRow(ResultSet rs,
                                  int i) throws SQLException {
-        return new PatientDiagnos(rs.getLong("ptnt_ptnt_id"),
-                                    rs.getDate("incoming_date"),
-                                    rs.getDate("outcoming_date"),
-                                    rs.getString("diagnos"),
-                                    rs.getDate("operation_date"),
-                                    rs.getString("localisation"),
-                                    rs.getInt("hist_num"));
+        return new PatientDiagnos(rs.getLong(PatientLayout.PATIENT_FRN_ID),
+                                    rs.getDate(PatientLayout.INCOMING_DATE),
+                                    rs.getDate(PatientLayout.OUTCOMING_DATE),
+                                    rs.getString(PatientLayout.DIAGNOS),
+                                    rs.getDate(PatientLayout.OPERATION_DATE),
+                                    rs.getString(PatientLayout.LOCALISATION),
+                                    rs.getInt(PatientLayout.HISTORY_NUM));
     }
 }

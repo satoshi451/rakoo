@@ -1,5 +1,6 @@
 package ru.votrin.doctordata.UI;
 
+import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.votrin.doctordata.DAO.PatientDAO;
@@ -11,6 +12,7 @@ import java.util.List;
 /**
  * Created by wiseman on 14.04.17.
  */
+@SpringUI
 public class PatientLayout extends VerticalLayout {
 
     private final PatientDAO patientDAO;
@@ -19,10 +21,21 @@ public class PatientLayout extends VerticalLayout {
     private final TextField lastName;
     private final TextField secondName;
     private Grid<PatientDiagnos> diagnosGrid;
-    private Patient patient;
+
+    public static final String PATIENT_FRN_ID = "ptnt_ptnt_id";
+    public static final String HISTORY_NUM = "hist_num";
+    public static final String INCOMING_DATE = "incoming_date";
+    public static final String OUTCOMING_DATE= "outcoming_date";
+    public static final String OPERATION_DATE = "operation_date";
+    public static final String LOCALISATION = "localisation";
+    public static final String DIAGNOS = "diagnos";
+
+    private static final String[] gridColumnCaptions = {HISTORY_NUM, INCOMING_DATE, OUTCOMING_DATE, OPERATION_DATE, LOCALISATION, DIAGNOS};
 
     @Autowired
     public PatientLayout(PatientDAO patientDAO) {
+        this.patientDAO = patientDAO;
+
         firstName = new TextField();
         lastName = new TextField();
         secondName = new TextField();
@@ -32,7 +45,6 @@ public class PatientLayout extends VerticalLayout {
         sex.setSelectedItem("Жен");
 
         VerticalLayout infoSpace = new VerticalLayout();
-
         HorizontalLayout hlf = new HorizontalLayout(new Label("Имя"), firstName);
         infoSpace.addComponent(hlf);
 
@@ -44,39 +56,40 @@ public class PatientLayout extends VerticalLayout {
         infoSpace.addComponent(hll);
 
         addComponent(infoSpace);
-
         initDiagnosGrid();
-        addComponentsAndExpand(diagnosGrid);
-        this.patientDAO = patientDAO;
     }
 
     private void initDiagnosGrid() {
         diagnosGrid = new Grid<>(PatientDiagnos.class);
-        diagnosGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-/*
-        diagnosGrid.setColumns("ptnt_ptnt_id",
-                                "incoming_date",
-                                "outcoming_date",
-                                "diagnos",
-                                "operation_date",
-                                "licalisation",
-                                "hist_num");
-*/
-        if (null != patient) {
-            List<PatientDiagnos> recs = patientDAO.getDiagnosByPtntId(patient.getPtnt_id());
-            diagnosGrid.setItems(recs);
+        diagnosGrid.setSizeFull();
+        diagnosGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 
-            System.out.println(recs);
-        }
+        diagnosGrid.setColumns(HISTORY_NUM,
+                                INCOMING_DATE,
+                                OUTCOMING_DATE,
+                                OPERATION_DATE,
+                                DIAGNOS,
+                                LOCALISATION);
+
+        diagnosGrid.getColumn(OUTCOMING_DATE).setCaption("Дата выписки");
+        diagnosGrid.getColumn(INCOMING_DATE).setCaption("Дата прибытия");
+        diagnosGrid.getColumn(DIAGNOS).setCaption("Диагноз");
+        diagnosGrid.getColumn(LOCALISATION).setCaption("Локализация");
+        diagnosGrid.getColumn(OPERATION_DATE).setCaption("Дата операции");
+        diagnosGrid.getColumn(HISTORY_NUM).setCaption("н.записи");
+
+        addComponentsAndExpand(diagnosGrid);
     }
 
-    public void setPatient(Patient patient) {
-        this.patient = patient;
+    public void setPatient(Patient newPatient) {
+        Patient patient = newPatient;
 
         firstName.setValue(patient.getFirst_name());
         lastName.setValue(patient.getSecond_name());
         secondName.setValue(patient.getPatronic());
-
-        initDiagnosGrid();
+        if (null != patient) {
+            List<PatientDiagnos> recs = patientDAO.getDiagnosByPtntId(patient.getPtnt_id());
+            diagnosGrid.setItems(recs);
+        }
     }
 }

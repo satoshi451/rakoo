@@ -31,6 +31,19 @@ public class PatientDiagnos {
         this.hist_num = hist_num;
     }
 
+    @Override
+    public String toString() {
+        return "PatientDiagnos{" +
+                "ptnt_ptnt_id=" + ptnt_ptnt_id +
+                ", incoming_date=" + incoming_date +
+                ", outcoming_date=" + outcoming_date +
+                ", diagnos='" + diagnos + '\'' +
+                ", operation_date=" + operation_date +
+                ", localisation='" + localisation + '\'' +
+                ", hist_num=" + hist_num +
+                '}';
+    }
+
     public Long getPtnt_ptnt_id() {
         return ptnt_ptnt_id;
     }
