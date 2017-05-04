@@ -18,6 +18,12 @@ public class PatientMapper implements RowMapper<Patient>{
                             rs.getString("second_name"),
                             rs.getString("patronic"),
                             rs.getDate("birth"),
-                            rs.getString("sex"));
+                            rs.getString("sex"),
+                            rs.getDate("incoming_date"),
+                            rs.getDate("outcoming_date"),
+                            rs.getString("diagnos"),
+                            rs.getDate("operation_date"),
+                            rs.getInt("hist_num"),
+                            rs.getLong("loc_loc_id"));
     }
 }

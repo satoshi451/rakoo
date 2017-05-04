@@ -1,7 +1,5 @@
 package ru.votrin.doctordata.DAO;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.votrin.doctordata.model.PatientDiagnos;
 import ru.votrin.doctordata.model.Patient;
@@ -15,35 +13,25 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 
 @Repository("PatientDAO")
-public class PatientDAOImpl implements PatientDAO {
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private void setDataSource(DataSource dataSource) {
-
-    }
+public class PatientDAOImpl extends AbstractDAO implements PatientDAO {
 
     @Override
     public List<Patient> findAll() {
-        String st = "select ptnt_id, first_name, second_name, patronic, birth, sex from cases.patients";
+        String st = "select * from cases.patients";
 
-        List<Patient> data = jdbcTemplate.query(st, new PatientMapper());
-        return data;
+        return jdbcTemplate.query(st, new PatientMapper());
     }
 
     @Override
     public List<Patient> findWithFilter(String filterText) {
-        StringBuilder st = new StringBuilder("select ptnt_id, first_name, second_name, patronic, birth, sex from cases.patients p ");
+        StringBuilder st = new StringBuilder("select * ");
+                st.append(" from cases.patients p ");
                 st.append(" where lower(p.first_name) like lower('%").append(filterText).append("%')");
                 st.append(" or lower(p.second_name) like lower('%").append(filterText).append("%')");
                 st.append(" or lower(p.patronic) like lower('%").append(filterText).append("%')");
 
         System.out.println(st.toString());
-        List<Patient> data = jdbcTemplate.query(st.toString(), new PatientMapper());
-
-        return data;
+        return jdbcTemplate.query(st.toString(), new PatientMapper());
     }
 
 
@@ -52,9 +40,24 @@ public class PatientDAOImpl implements PatientDAO {
                               String sname,
                               String lname,
                               String birth,
-                              String sex) {
+                              String sex,
+                              Long loc_id,
+                              String diag,
+                              String incDate,
+                              String oucDate,
+                              String operDate) {
         StringBuilder st = new StringBuilder("select cases.create_patient('");
-        st.append(fname).append("','").append(lname).append("','").append(sname).append("','").append(birth).append("','").append(sex).append("')");
+        st.append(fname).append("','");
+        st.append(lname).append("','");
+        st.append(sname).append("','");
+        st.append(birth).append("','");
+        st.append(sex).append("','");
+        st.append(loc_id).append("','");
+        st.append(diag).append("','");
+        st.append(incDate).append("','");
+        st.append(oucDate).append("','");
+        st.append(operDate).append("')");
+
         System.out.println(st.toString());
         jdbcTemplate.execute(st.toString());
     }

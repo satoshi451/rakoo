@@ -10,10 +10,13 @@ import com.vaadin.ui.components.grid.ItemClickListener;
 import com.vaadin.ui.themes.ValoTheme;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import ru.votrin.doctordata.DAO.DictionaryDAO;
 import ru.votrin.doctordata.DAO.PatientDAO;
+import ru.votrin.doctordata.model.Localisation;
 import ru.votrin.doctordata.model.Patient;
 
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -27,6 +30,9 @@ public class DoctorUI extends UI{
     @Autowired
     private PatientDAO patientDAO;
 
+    @Autowired
+    private DictionaryDAO dictionaryDAO;
+
     private Grid<Patient> grid;
     private TextField fname;
     private TextField lname;
@@ -35,6 +41,11 @@ public class DoctorUI extends UI{
     private DateField birth;
     private ComboBox<String> sexField;
     private PatientLayout patientDataLayout;
+    private TextArea diagnos;
+    private DateField incDateCal;
+    private DateField oucDateCal;
+    private DateField operDateCal;
+    private ComboBox<Localisation> locals;
 
     @Override
     protected void init(VaadinRequest request) {
@@ -80,7 +91,7 @@ public class DoctorUI extends UI{
         content.setSizeFull();
         content.setSpacing(false);
 
-        patientDataLayout = new PatientLayout(patientDAO);
+        patientDataLayout = new PatientLayout(dictionaryDAO);
 
         content.addComponent(patientDataLayout);
 
@@ -91,6 +102,8 @@ public class DoctorUI extends UI{
             System.out.println(itemClick.getItem());
         });
 
+        content.setExpandRatio(dataLayout, (float) 0.7);
+        content.setExpandRatio(patientDataLayout, (float) 0.3);
         setContent(content);
     }
 
@@ -103,48 +116,99 @@ public class DoctorUI extends UI{
         wnd.center();
 
         wnd.setModal(true);
-        wnd.setWidth("500");
-        wnd.setHeight("400");
+        wnd.setWidth("50%");
+        wnd.setHeight("100%");
 
         fname = new TextField();
         sname = new TextField();
         lname = new TextField();
         sexField = new ComboBox<String>();
+        sexField.setPlaceholder("Пол");
         sexField.setItems("Муж", "Жен");
-
+/*
         fname.setWidth("350px");
         sname.setWidth("350px");
         lname.setWidth("350px");
+*/
+        incDateCal = new DateField();
+        incDateCal.setDateFormat("dd-MM-yyyy");
+        incDateCal.setPlaceholder("дд-мм-гггг");
 
-        HorizontalLayout fnameLine = new HorizontalLayout();
-        HorizontalLayout snameLine = new HorizontalLayout();
-        HorizontalLayout lnameLine = new HorizontalLayout();
+        oucDateCal = new DateField();
+        oucDateCal.setDateFormat("dd-MM-yyyy");
+        oucDateCal.setPlaceholder("дд-мм-гггг");
 
-        fnameLine.addComponent(new Label("Имя:"));
-        fnameLine.addComponents(fname);
+        operDateCal = new DateField();
+        operDateCal.setDateFormat("dd-MM-yyyy");
+        operDateCal.setPlaceholder("дд-мм-гггг");
 
-        snameLine.addComponent(new Label("Отчество:"));
-        snameLine.addComponents(sname);
-
-        lnameLine.addComponent(new Label("Фамилия:"));
-        lnameLine.addComponents(lname);
-
-        Button addPatient = new Button("Добавить пациента");
         birth = new DateField();
         birth.setDateFormat("dd-MM-yyyy");
         birth.setPlaceholder("дд-мм-гггг");
 
+        HorizontalLayout fnameLine = new HorizontalLayout();
+        HorizontalLayout snameLine = new HorizontalLayout();
+        HorizontalLayout lnameLine = new HorizontalLayout();
+        HorizontalLayout bLayout = new HorizontalLayout();
+        HorizontalLayout incLayout = new HorizontalLayout();
+        HorizontalLayout oucLayout = new HorizontalLayout();
+        HorizontalLayout operLayout = new HorizontalLayout();
+
+        fnameLine.addComponent(new Label("Имя:"));
+        fnameLine.addComponentsAndExpand(fname);
+        fnameLine.setExpandRatio(fname, (float) 0.7);
+
+        snameLine.addComponent(new Label("Отчество:"));
+        snameLine.addComponentsAndExpand(sname);
+        snameLine.setExpandRatio(sname, (float) 0.7);
+
+        lnameLine.addComponent(new Label("Фамилия:"));
+        lnameLine.addComponentsAndExpand(lname);
+        lnameLine.setExpandRatio(lname, (float) 0.7);
+
+        Button addPatient = new Button("Добавить пациента");
+        addPatient.setSizeFull();
+
+        bLayout.addComponent(new Label("Дата рождения:"));
+        bLayout.addComponent(birth);
+
+        incLayout.addComponent(new Label("Дата прибытия:"));
+        incLayout.addComponent(incDateCal);
+
+        operLayout.addComponent(new Label("Дата операции:"));
+        operLayout.addComponent(operDateCal);
+
+        oucLayout.addComponent(new Label("Дата выписки:"));
+        oucLayout.addComponent(oucDateCal);
+
+        locals = new ComboBox<Localisation>();
+        locals.setSizeFull();
+
+        locals.setItems(dictionaryDAO.getLocatiosations());
+
         addPatient.addClickListener(this::createPatient);
         addPatient.addStyleName(ValoTheme.BUTTON_FRIENDLY);
+
+        diagnos = new TextArea();
+        diagnos.setPlaceholder("Введите диагноз...");
+        //diagnos.setRows(3);
+        diagnos.setSizeFull();
 
         layout.addComponentsAndExpand(fnameLine);
         layout.addComponentsAndExpand(snameLine);
         layout.addComponentsAndExpand(lnameLine);
+        layout.addComponentsAndExpand(locals);
+        layout.addComponentsAndExpand(diagnos);
 
         layout.addComponent(sexField);
-        layout.addComponent(birth);
+
+        layout.addComponentsAndExpand(bLayout);
+        layout.addComponentsAndExpand(incLayout);
+        layout.addComponentsAndExpand(operLayout);
+        layout.addComponentsAndExpand(oucLayout);
         layout.addComponentsAndExpand(addPatient);
 
+        layout.setSpacing(false);
         addWindow(wnd);
     }
 
@@ -154,13 +218,15 @@ public class DoctorUI extends UI{
         String l_name = lname.getValue();
         String birthDate = birth.getValue().toString();
         String sex = sexField.getValue();
-        if (sex.equals("Муж"))
-            sex = "m";
-        else
-            sex = "f";
+        Long loc_id = locals.getValue().getLoc_id();
+
+        String diag = diagnos.getValue();
+        String incDate = incDateCal.getValue().toString();
+        String oucDate = oucDateCal.getValue().toString();
+        String operDate = operDateCal.getValue().toString();
 
         if (!(StringUtils.isEmpty(f_name) && StringUtils.isEmpty(s_name) && StringUtils.isEmpty(l_name))) {
-            patientDAO.createPatient(f_name, s_name, l_name, birthDate, sex);
+            patientDAO.createPatient(f_name, s_name, l_name, birthDate, sex, loc_id, diag, incDate, oucDate, operDate);
             wnd.close();
             fname.clear();
             sname.clear();

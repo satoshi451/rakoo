@@ -17,7 +17,12 @@ public interface PatientDAO {
                        String sname,
                        String lname,
                        String birth,
-                       String sex);
+                       String sex,
+                       Long loc_id,
+                       String diag,
+                       String incDate,
+                       String oucDate,
+                       String operDate);
 
     List<PatientDiagnos> getDiagnosByPtntId(Long ptnt_id);
 }

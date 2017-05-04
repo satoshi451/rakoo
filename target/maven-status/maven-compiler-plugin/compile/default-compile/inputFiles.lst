@@ -1,0 +1,11 @@
+/home/wiseman/ideaProjects/doctorUI/src/main/java/ru/votrin/doctordata/DoctorUiApplication.java
+/home/wiseman/ideaProjects/doctorUI/src/main/java/ru/votrin/doctordata/DAO/DiagnosMapper.java
+/home/wiseman/ideaProjects/doctorUI/src/main/java/ru/votrin/doctordata/DAO/PatientMapper.java
+/home/wiseman/ideaProjects/doctorUI/src/main/java/ru/votrin/doctordata/DAO/DataSource.java
+/home/wiseman/ideaProjects/doctorUI/src/main/java/ru/votrin/doctordata/UI/DoctorMenu.java
+/home/wiseman/ideaProjects/doctorUI/src/main/java/ru/votrin/doctordata/DAO/PatientDAO.java
+/home/wiseman/ideaProjects/doctorUI/src/main/java/ru/votrin/doctordata/UI/DoctorUI.java
+/home/wiseman/ideaProjects/doctorUI/src/main/java/ru/votrin/doctordata/model/Patient.java
+/home/wiseman/ideaProjects/doctorUI/src/main/java/ru/votrin/doctordata/model/PatientDiagnos.java
+/home/wiseman/ideaProjects/doctorUI/src/main/java/ru/votrin/doctordata/DAO/PatientDAOImpl.java
+/home/wiseman/ideaProjects/doctorUI/src/main/java/ru/votrin/doctordata/UI/PatientLayout.java

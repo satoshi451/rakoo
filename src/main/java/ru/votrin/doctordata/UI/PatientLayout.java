@@ -3,11 +3,10 @@ package ru.votrin.doctordata.UI;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.votrin.doctordata.DAO.PatientDAO;
+import ru.votrin.doctordata.DAO.DictionaryDAO;
+import ru.votrin.doctordata.model.Localisation;
 import ru.votrin.doctordata.model.Patient;
 import ru.votrin.doctordata.model.PatientDiagnos;
-
-import java.util.List;
 
 /**
  * Created by wiseman on 14.04.17.
@@ -15,11 +14,11 @@ import java.util.List;
 @SpringUI
 public class PatientLayout extends VerticalLayout {
 
-    private final PatientDAO patientDAO;
-
     private final TextField firstName;
     private final TextField lastName;
     private final TextField secondName;
+    private final Label loc_lab;
+    private final DictionaryDAO dictionaryDAO;
     private Grid<PatientDiagnos> diagnosGrid;
 
     public static final String PATIENT_FRN_ID = "ptnt_ptnt_id";
@@ -33,9 +32,8 @@ public class PatientLayout extends VerticalLayout {
     private static final String[] gridColumnCaptions = {HISTORY_NUM, INCOMING_DATE, OUTCOMING_DATE, OPERATION_DATE, LOCALISATION, DIAGNOS};
 
     @Autowired
-    public PatientLayout(PatientDAO patientDAO) {
-        this.patientDAO = patientDAO;
-
+    public PatientLayout(DictionaryDAO dictionaryDAO) {
+        this.dictionaryDAO = dictionaryDAO;
         firstName = new TextField();
         lastName = new TextField();
         secondName = new TextField();
@@ -55,8 +53,11 @@ public class PatientLayout extends VerticalLayout {
         HorizontalLayout hll = new HorizontalLayout(new Label("Отчество"), lastName);
         infoSpace.addComponent(hll);
 
+        loc_lab = new Label("");
+        infoSpace.addComponent(loc_lab);
+
         addComponent(infoSpace);
-        initDiagnosGrid();
+//        initDiagnosGrid();
     }
 
     private void initDiagnosGrid() {
@@ -82,14 +83,17 @@ public class PatientLayout extends VerticalLayout {
     }
 
     public void setPatient(Patient newPatient) {
-        Patient patient = newPatient;
 
-        firstName.setValue(patient.getFirst_name());
-        lastName.setValue(patient.getSecond_name());
-        secondName.setValue(patient.getPatronic());
+        firstName.setValue(newPatient.getFirst_name());
+        lastName.setValue(newPatient.getSecond_name());
+        secondName.setValue(newPatient.getPatronic());
+        Localisation loc = dictionaryDAO.findLocalisationById(newPatient.getLoc_loc_id());
+        loc_lab.setValue(loc.getDescription());
+        /*
         if (null != patient) {
             List<PatientDiagnos> recs = patientDAO.getDiagnosByPtntId(patient.getPtnt_id());
             diagnosGrid.setItems(recs);
         }
+        */
     }
 }
