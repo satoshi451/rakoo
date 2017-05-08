@@ -2,6 +2,7 @@ package ru.votrin.doctordata.UI;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.icons.VaadinIcons;
+import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.ValueChangeMode;
 import com.vaadin.spring.annotation.SpringUI;
@@ -17,6 +18,7 @@ import ru.votrin.doctordata.model.Patient;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 /**
@@ -49,8 +51,11 @@ public class DoctorUI extends UI{
     private TextField histNum;
     private HorizontalSplitPanel content;
 
+    private static final ConfirmDialog confirmDialog = new ConfirmDialog();
+
     @Override
     protected void init(VaadinRequest request) {
+        addWindow(confirmDialog);
         grid = new Grid<>(Patient.class);
         grid.setColumnOrder("hist_num", "first_name", "patronic", "second_name", "birth", "sex", "diagnos", "incoming_date", "outcoming_date", "operation_date");
         grid.getColumn("first_name").setCaption("Имя");
@@ -70,6 +75,11 @@ public class DoctorUI extends UI{
         grid.removeColumn("loc_loc_id");
         grid.setWidth("100%");
 
+        grid.addSelectionListener(event -> {
+            Set<Patient> items = event.getAllSelectedItems();
+            confirmDialog.setItems(items);
+            confirmDialog.show();
+        });
         HorizontalLayout searchLine = new HorizontalLayout();
 
         TextField filter = new TextField();
@@ -90,17 +100,14 @@ public class DoctorUI extends UI{
 
         VerticalLayout dataLayout = new VerticalLayout();
 
- //       mainLayout.addComponents(menuBar);
         dataLayout.addComponent(searchLine);
         dataLayout.addComponentsAndExpand(grid);
         listPatient("");
 
-        //HorizontalLayout content = new HorizontalLayout();
         content = new HorizontalSplitPanel();
 
         content.addComponent(dataLayout);
         content.setSizeFull();
-        //content.setSpacing(false);
 
         patientDataLayout = new PatientLayout(this, dictionaryDAO, patientDAO);
 
@@ -114,9 +121,6 @@ public class DoctorUI extends UI{
             System.out.println(itemClick.getItem());
         });
 
-        //content.setExpandRatio(dataLayout, (float) 0.7);
-       // content.setExpandRatio(patientDataLayout, (float) 0.3);
-        //content.setSpacing(false);
         content.setSplitPosition(90, Unit.PERCENTAGE);
         setContent(content);
     }

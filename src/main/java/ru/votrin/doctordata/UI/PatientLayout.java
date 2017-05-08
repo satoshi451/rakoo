@@ -71,6 +71,7 @@ public class PatientLayout extends VerticalLayout {
 
         isEnabled = true;
         isMinimized = true;
+        isTextChanged = false;
 
         firstName = new TextField();
         lastName = new TextField();
@@ -142,12 +143,10 @@ public class PatientLayout extends VerticalLayout {
                 loc_lab.setEnabled(isEnabled);
 
                 if (isEnabled) {
-                    lockB.setIcon(VaadinIcons.UNLOCK);
-                    isEnabled = false;
+                    enableAll();
                 } else {
-                    lockB.setIcon(VaadinIcons.LOCK);
-                    isEnabled = true;
                     updatePatient();
+                    disableAll();
                 }
             } else {
                 Notification.show("Пациент не выбран", Notification.Type.WARNING_MESSAGE);
@@ -162,13 +161,15 @@ public class PatientLayout extends VerticalLayout {
     private void addInputListeners() {
         HasValue.ValueChangeListener<String> textChangeListener = (HasValue.ValueChangeListener<String>) event -> {
             if (!isEnabled && !event.getOldValue().equals("")) {
-                System.out.println(event.getValue());
+                System.out.println(event.getValue() + " , [text changed]");
+                isTextChanged = true;
             }
         };
 
         HasValue.ValueChangeListener<LocalDate> dateChangeListener = (HasValue.ValueChangeListener<LocalDate>) event -> {
             if (!isEnabled && null != event.getOldValue()) {
-                System.out.println(event.getValue());
+                System.out.println(event.getValue() + " , [text changed]");
+                isTextChanged = true;
             }
         };
 
@@ -177,6 +178,13 @@ public class PatientLayout extends VerticalLayout {
         lastName.addValueChangeListener(textChangeListener);
         histNum.addValueChangeListener(textChangeListener);
         diag.addValueChangeListener(textChangeListener);
+
+        loc_lab.addValueChangeListener((HasValue.ValueChangeListener<Localisation>) event -> {
+            if (!isEnabled && !event.getOldValue().equals("null")) {
+                System.out.println(event.getValue() + " , [text changed]");
+                isTextChanged = true;
+            }
+        });
 
         bDate.addValueChangeListener(dateChangeListener);
         incDate.addValueChangeListener(dateChangeListener);
@@ -188,10 +196,12 @@ public class PatientLayout extends VerticalLayout {
     }
 
     private void updatePatient() {
-        patientDAO.update(patient.getPtnt_id(), firstName.getValue(),lastName.getValue(), secondName.getValue(), histNum.getValue(), bDate.getValue(), incDate.getValue(), oucDate.getValue(), operDate.getValue(), diag.getValue());
-        parent.listPatient("");
+        System.out.println("ISTEXTCHANGE: " + isTextChanged);
+        if (isTextChanged) {
+            patientDAO.update(patient.getPtnt_id(), firstName.getValue(), lastName.getValue(), secondName.getValue(), histNum.getValue(), bDate.getValue(), incDate.getValue(), oucDate.getValue(), operDate.getValue(), diag.getValue());
+            parent.listPatient("");
+        }
     }
-
 
     private void hideAll(){
         hlf.setVisible(false);
@@ -220,6 +230,8 @@ public class PatientLayout extends VerticalLayout {
         loc_lab.setVisible(true);
     }
     private void disableAll(){
+        lockB.setIcon(VaadinIcons.LOCK);
+
         firstName.setEnabled(false);
         lastName.setEnabled(false);
         secondName.setEnabled(false);
@@ -233,8 +245,15 @@ public class PatientLayout extends VerticalLayout {
         bDate.setEnabled(false);
         diag.setEnabled(false);
         loc_lab.setEnabled(false);
+
+        isEnabled = true;
+
+        isTextChanged = false;
     }
     private void enableAll() {
+        lockB.setIcon(VaadinIcons.UNLOCK);
+        isEnabled = false;
+
         firstName.setEnabled(true);
         lastName.setEnabled(true);
         secondName.setEnabled(true);
@@ -263,6 +282,7 @@ public class PatientLayout extends VerticalLayout {
     }
     void setPatient(Patient patient) {
         maximize();
+        disableAll();
 
         this.patient = patient;
         String nm = patient.getHist_num();
