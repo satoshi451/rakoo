@@ -46,19 +46,28 @@ public class DoctorUI extends UI{
     private DateField oucDateCal;
     private DateField operDateCal;
     private ComboBox<Localisation> locals;
+    private TextField histNum;
+    private HorizontalSplitPanel content;
 
     @Override
     protected void init(VaadinRequest request) {
         grid = new Grid<>(Patient.class);
-        grid.setColumnOrder("first_name", "patronic", "second_name", "birth", "sex");
+        grid.setColumnOrder("hist_num", "first_name", "patronic", "second_name", "birth", "sex", "diagnos", "incoming_date", "outcoming_date", "operation_date");
         grid.getColumn("first_name").setCaption("Имя");
         grid.getColumn("patronic").setCaption("Отчество");
         grid.getColumn("second_name").setCaption("Фамилия");
         grid.getColumn("birth").setCaption("Дата рождения");
         grid.getColumn("sex").setCaption("Пол");
+        grid.getColumn("incoming_date").setCaption("Дата прибытия");
+        grid.getColumn("outcoming_date").setCaption("Дата выписки");
+        grid.getColumn("diagnos").setCaption("Диагноз");
+        grid.getColumn("operation_date").setCaption("Дата операции");
+        grid.getColumn("hist_num").setCaption("№ и.б.");
+
         grid.setSelectionMode(Grid.SelectionMode.MULTI);
 
         grid.removeColumn("ptnt_id");
+        grid.removeColumn("loc_loc_id");
         grid.setWidth("100%");
 
         HorizontalLayout searchLine = new HorizontalLayout();
@@ -86,12 +95,15 @@ public class DoctorUI extends UI{
         dataLayout.addComponentsAndExpand(grid);
         listPatient("");
 
-        HorizontalLayout content = new HorizontalLayout();
+        //HorizontalLayout content = new HorizontalLayout();
+        content = new HorizontalSplitPanel();
+
         content.addComponent(dataLayout);
         content.setSizeFull();
-        content.setSpacing(false);
+        //content.setSpacing(false);
 
-        patientDataLayout = new PatientLayout(dictionaryDAO);
+        patientDataLayout = new PatientLayout(this, dictionaryDAO, patientDAO);
+
 
         content.addComponent(patientDataLayout);
 
@@ -102,8 +114,10 @@ public class DoctorUI extends UI{
             System.out.println(itemClick.getItem());
         });
 
-        content.setExpandRatio(dataLayout, (float) 0.7);
-        content.setExpandRatio(patientDataLayout, (float) 0.3);
+        //content.setExpandRatio(dataLayout, (float) 0.7);
+       // content.setExpandRatio(patientDataLayout, (float) 0.3);
+        //content.setSpacing(false);
+        content.setSplitPosition(90, Unit.PERCENTAGE);
         setContent(content);
     }
 
@@ -122,6 +136,7 @@ public class DoctorUI extends UI{
         fname = new TextField();
         sname = new TextField();
         lname = new TextField();
+
         sexField = new ComboBox<String>();
         sexField.setPlaceholder("Пол");
         sexField.setItems("Муж", "Жен");
@@ -130,6 +145,9 @@ public class DoctorUI extends UI{
         sname.setWidth("350px");
         lname.setWidth("350px");
 */
+        histNum = new TextField();
+        histNum.setPlaceholder("История болезни");
+
         incDateCal = new DateField();
         incDateCal.setDateFormat("dd-MM-yyyy");
         incDateCal.setPlaceholder("дд-мм-гггг");
@@ -154,17 +172,14 @@ public class DoctorUI extends UI{
         HorizontalLayout oucLayout = new HorizontalLayout();
         HorizontalLayout operLayout = new HorizontalLayout();
 
-        fnameLine.addComponent(new Label("Имя:"));
         fnameLine.addComponentsAndExpand(fname);
-        fnameLine.setExpandRatio(fname, (float) 0.7);
+        fname.setPlaceholder("Имя");
 
-        snameLine.addComponent(new Label("Отчество:"));
         snameLine.addComponentsAndExpand(sname);
-        snameLine.setExpandRatio(sname, (float) 0.7);
+        sname.setPlaceholder("Отчество");
 
-        lnameLine.addComponent(new Label("Фамилия:"));
         lnameLine.addComponentsAndExpand(lname);
-        lnameLine.setExpandRatio(lname, (float) 0.7);
+        lname.setPlaceholder("Фамилия");
 
         Button addPatient = new Button("Добавить пациента");
         addPatient.setSizeFull();
@@ -182,6 +197,7 @@ public class DoctorUI extends UI{
         oucLayout.addComponent(oucDateCal);
 
         locals = new ComboBox<Localisation>();
+        locals.setPlaceholder("Выберите локализацию");
         locals.setSizeFull();
 
         locals.setItems(dictionaryDAO.getLocatiosations());
@@ -194,13 +210,13 @@ public class DoctorUI extends UI{
         //diagnos.setRows(3);
         diagnos.setSizeFull();
 
-        layout.addComponentsAndExpand(fnameLine);
-        layout.addComponentsAndExpand(snameLine);
-        layout.addComponentsAndExpand(lnameLine);
+        layout.addComponentsAndExpand(fname);
+        layout.addComponentsAndExpand(sname);
+        layout.addComponentsAndExpand(lname);
         layout.addComponentsAndExpand(locals);
         layout.addComponentsAndExpand(diagnos);
 
-        layout.addComponent(sexField);
+        layout.addComponentsAndExpand(new HorizontalLayout(sexField, histNum));
 
         layout.addComponentsAndExpand(bLayout);
         layout.addComponentsAndExpand(incLayout);
@@ -208,7 +224,7 @@ public class DoctorUI extends UI{
         layout.addComponentsAndExpand(oucLayout);
         layout.addComponentsAndExpand(addPatient);
 
-        layout.setSpacing(false);
+        //layout.setSpacing(false);
         addWindow(wnd);
     }
 
@@ -220,13 +236,14 @@ public class DoctorUI extends UI{
         String sex = sexField.getValue();
         Long loc_id = locals.getValue().getLoc_id();
 
+        String hist = histNum.getValue();
         String diag = diagnos.getValue();
         String incDate = incDateCal.getValue().toString();
         String oucDate = oucDateCal.getValue().toString();
         String operDate = operDateCal.getValue().toString();
 
         if (!(StringUtils.isEmpty(f_name) && StringUtils.isEmpty(s_name) && StringUtils.isEmpty(l_name))) {
-            patientDAO.createPatient(f_name, s_name, l_name, birthDate, sex, loc_id, diag, incDate, oucDate, operDate);
+            patientDAO.createPatient(f_name, s_name, l_name, hist, birthDate, sex, loc_id, diag, incDate, oucDate, operDate);
             wnd.close();
             fname.clear();
             sname.clear();
@@ -240,7 +257,7 @@ public class DoctorUI extends UI{
         }
     }
 
-    private void listPatient(String filterText) {
+    public void listPatient(String filterText) {
         List<Patient> patients;
         if(StringUtils.isEmpty(filterText)) {
             patients = patientDAO.findAll();
@@ -248,6 +265,12 @@ public class DoctorUI extends UI{
             patients = patientDAO.findWithFilter(filterText);
         }
         grid.setItems(patients);
+    }
+    public void setSplitPosition(int position) {
+        content.setSplitPosition(position, Unit.PERCENTAGE);
+    }
+    public float getSplitPosition() {
+        return content.getSplitPosition();
     }
 }
 

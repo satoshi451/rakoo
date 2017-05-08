@@ -23,7 +23,7 @@ public class PatientMapper implements RowMapper<Patient>{
                             rs.getDate("outcoming_date"),
                             rs.getString("diagnos"),
                             rs.getDate("operation_date"),
-                            rs.getInt("hist_num"),
+                            rs.getString("hist_num"),
                             rs.getLong("loc_loc_id"));
     }
 }

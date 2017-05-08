@@ -1,12 +1,18 @@
 package ru.votrin.doctordata.UI;
 
+import com.vaadin.data.HasValue;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.votrin.doctordata.DAO.DictionaryDAO;
+import ru.votrin.doctordata.DAO.PatientDAO;
 import ru.votrin.doctordata.model.Localisation;
 import ru.votrin.doctordata.model.Patient;
-import ru.votrin.doctordata.model.PatientDiagnos;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by wiseman on 14.04.17.
@@ -17,9 +23,31 @@ public class PatientLayout extends VerticalLayout {
     private final TextField firstName;
     private final TextField lastName;
     private final TextField secondName;
-    private final Label loc_lab;
+    private final ComboBox<Localisation> loc_lab;
     private final DictionaryDAO dictionaryDAO;
-    private Grid<PatientDiagnos> diagnosGrid;
+    private final DateField incDate;
+    private final DateField oucDate;
+    private final DateField bDate;
+    private final DateField operDate;
+    private final TextArea diag;
+    private final TextField histNum;
+    private final PatientDAO patientDAO;
+    private final DoctorUI parent;
+    private final Button splitMove;
+    private final HorizontalLayout bLayout;
+    private final HorizontalLayout incLayout;
+    private final HorizontalLayout oucLayout;
+    private final HorizontalLayout operLayout;
+    private final HorizontalLayout hLayout;
+    private final HorizontalLayout hlf;
+    private final HorizontalLayout hls;
+    private final HorizontalLayout hll;
+    private final Button lockB;
+    private final List<Localisation> localisations;
+
+    private boolean isMinimized;
+    private boolean isEnabled;
+    private boolean isTextChanged;
 
     public static final String PATIENT_FRN_ID = "ptnt_ptnt_id";
     public static final String HISTORY_NUM = "hist_num";
@@ -29,71 +57,245 @@ public class PatientLayout extends VerticalLayout {
     public static final String LOCALISATION = "localisation";
     public static final String DIAGNOS = "diagnos";
 
-    private static final String[] gridColumnCaptions = {HISTORY_NUM, INCOMING_DATE, OUTCOMING_DATE, OPERATION_DATE, LOCALISATION, DIAGNOS};
+    private Patient patient;
 
     @Autowired
-    public PatientLayout(DictionaryDAO dictionaryDAO) {
+    public PatientLayout(DoctorUI components,
+                         DictionaryDAO dictionaryDAO,
+                         PatientDAO patientDAO) {
+        this.parent = components;
         this.dictionaryDAO = dictionaryDAO;
+        this.patientDAO = patientDAO;
+
+        localisations = this.dictionaryDAO.getLocatiosations();
+
+        isEnabled = true;
+        isMinimized = true;
+
         firstName = new TextField();
         lastName = new TextField();
         secondName = new TextField();
+        splitMove = new Button(VaadinIcons.ARROW_LEFT);
+        splitMove.addClickListener(click -> {
+            if (isMinimized) {
+                maximize();
+            } else {
+                minimize();
+            }
+        });
+        lockB = new Button(VaadinIcons.LOCK);
+
+        addComponent(new HorizontalLayout(splitMove, lockB));
 
         ComboBox<Object> sex = new ComboBox<>();
         sex.setItems("Муж", "Жен");
         sex.setSelectedItem("Жен");
 
-        VerticalLayout infoSpace = new VerticalLayout();
-        HorizontalLayout hlf = new HorizontalLayout(new Label("Имя"), firstName);
-        infoSpace.addComponent(hlf);
+        histNum = new TextField();
+        hLayout = new HorizontalLayout(new Label("Ист. болезни:"), histNum);
+        addComponent(hLayout);
 
-        HorizontalLayout hls = new HorizontalLayout(new Label("Фамилия"), secondName);
+        hlf = new HorizontalLayout(new Label("Имя"), firstName);
+        addComponent(hlf);
+        hls = new HorizontalLayout(new Label("Фамилия"), secondName);
+        addComponent(hls);
+        hll = new HorizontalLayout(new Label("Отчество"), lastName);
+        addComponent(hll);
 
-        infoSpace.addComponent(hls);
+        loc_lab = new ComboBox<Localisation>();
+        loc_lab.setItems(localisations);
+        loc_lab.setSelectedItem(new Localisation());
+        loc_lab.setWidth("100%");
+        addComponentsAndExpand(loc_lab);
 
-        HorizontalLayout hll = new HorizontalLayout(new Label("Отчество"), lastName);
-        infoSpace.addComponent(hll);
 
-        loc_lab = new Label("");
-        infoSpace.addComponent(loc_lab);
+        diag = new TextArea();
+        addComponentsAndExpand(diag);
+        diag.setSizeFull();
 
-        addComponent(infoSpace);
-//        initDiagnosGrid();
+        bDate = new DateField();
+        incDate = new DateField();
+        oucDate = new DateField();
+        operDate = new DateField();
+
+        bLayout = new HorizontalLayout(new Label("Дата рождения:"), bDate);
+        addComponentsAndExpand(bLayout);
+
+        incLayout = new HorizontalLayout(new Label("Дата поступления:"), incDate);
+        addComponentsAndExpand(incLayout);
+        oucLayout = new HorizontalLayout(new Label("Дата выписки:"), oucDate);
+        addComponentsAndExpand(oucLayout);
+        operLayout = new HorizontalLayout(new Label("Дата операции:"), operDate);
+        addComponentsAndExpand(operLayout);
+
+        lockB.addClickListener(click -> {
+            if (null != patient) {
+                firstName.setEnabled(isEnabled);
+                lastName.setEnabled(isEnabled);
+                secondName.setEnabled(isEnabled);
+                histNum.setEnabled(isEnabled);
+                bDate.setEnabled(isEnabled);
+                incDate.setEnabled(isEnabled);
+                oucDate.setEnabled(isEnabled);
+                operDate.setEnabled(isEnabled);
+                diag.setEnabled(isEnabled);
+                loc_lab.setEnabled(isEnabled);
+
+                if (isEnabled) {
+                    lockB.setIcon(VaadinIcons.UNLOCK);
+                    isEnabled = false;
+                } else {
+                    lockB.setIcon(VaadinIcons.LOCK);
+                    isEnabled = true;
+                    updatePatient();
+                }
+            } else {
+                Notification.show("Пациент не выбран", Notification.Type.WARNING_MESSAGE);
+            }
+
+        });
+        disableAll();
+        hideAll();
+        addInputListeners();
     }
 
-    private void initDiagnosGrid() {
-        diagnosGrid = new Grid<>(PatientDiagnos.class);
-        diagnosGrid.setSizeFull();
-        diagnosGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+    private void addInputListeners() {
+        HasValue.ValueChangeListener<String> textChangeListener = (HasValue.ValueChangeListener<String>) event -> {
+            if (!isEnabled && !event.getOldValue().equals("")) {
+                System.out.println(event.getValue());
+            }
+        };
 
-        diagnosGrid.setColumns(HISTORY_NUM,
-                                INCOMING_DATE,
-                                OUTCOMING_DATE,
-                                OPERATION_DATE,
-                                DIAGNOS,
-                                LOCALISATION);
+        HasValue.ValueChangeListener<LocalDate> dateChangeListener = (HasValue.ValueChangeListener<LocalDate>) event -> {
+            if (!isEnabled && null != event.getOldValue()) {
+                System.out.println(event.getValue());
+            }
+        };
 
-        diagnosGrid.getColumn(OUTCOMING_DATE).setCaption("Дата выписки");
-        diagnosGrid.getColumn(INCOMING_DATE).setCaption("Дата прибытия");
-        diagnosGrid.getColumn(DIAGNOS).setCaption("Диагноз");
-        diagnosGrid.getColumn(LOCALISATION).setCaption("Локализация");
-        diagnosGrid.getColumn(OPERATION_DATE).setCaption("Дата операции");
-        diagnosGrid.getColumn(HISTORY_NUM).setCaption("н.записи");
+        firstName.addValueChangeListener(textChangeListener);
+        secondName.addValueChangeListener(textChangeListener);
+        lastName.addValueChangeListener(textChangeListener);
+        histNum.addValueChangeListener(textChangeListener);
+        diag.addValueChangeListener(textChangeListener);
 
-        addComponentsAndExpand(diagnosGrid);
+        bDate.addValueChangeListener(dateChangeListener);
+        incDate.addValueChangeListener(dateChangeListener);
+        oucDate.addValueChangeListener(dateChangeListener);
+        operDate.addValueChangeListener(dateChangeListener);
+        bDate.addValueChangeListener(dateChangeListener);
+
+
     }
 
-    public void setPatient(Patient newPatient) {
+    private void updatePatient() {
+        patientDAO.update(patient.getPtnt_id(), firstName.getValue(),lastName.getValue(), secondName.getValue(), histNum.getValue(), bDate.getValue(), incDate.getValue(), oucDate.getValue(), operDate.getValue(), diag.getValue());
+        parent.listPatient("");
+    }
 
-        firstName.setValue(newPatient.getFirst_name());
-        lastName.setValue(newPatient.getSecond_name());
-        secondName.setValue(newPatient.getPatronic());
-        Localisation loc = dictionaryDAO.findLocalisationById(newPatient.getLoc_loc_id());
-        loc_lab.setValue(loc.getDescription());
-        /*
-        if (null != patient) {
-            List<PatientDiagnos> recs = patientDAO.getDiagnosByPtntId(patient.getPtnt_id());
-            diagnosGrid.setItems(recs);
+
+    private void hideAll(){
+        hlf.setVisible(false);
+        hls.setVisible(false);
+        hll.setVisible(false);
+        hLayout.setVisible(false);
+        bLayout.setVisible(false);
+        incLayout.setVisible(false);
+        oucLayout.setVisible(false);
+        operLayout.setVisible(false);
+        diag.setVisible(false);
+        lockB.setVisible(false);
+        loc_lab.setVisible(false);
+    }
+    private void showAll() {
+        hlf.setVisible(true);
+        hls.setVisible(true);
+        hll.setVisible(true);
+        hLayout.setVisible(true);
+        bLayout.setVisible(true);
+        incLayout.setVisible(true);
+        oucLayout.setVisible(true);
+        operLayout.setVisible(true);
+        diag.setVisible(true);
+        lockB.setVisible(true);
+        loc_lab.setVisible(true);
+    }
+    private void disableAll(){
+        firstName.setEnabled(false);
+        lastName.setEnabled(false);
+        secondName.setEnabled(false);
+
+        incDate.setEnabled(false);
+        oucDate.setEnabled(false);
+        operDate.setEnabled(false);
+
+        histNum.setEnabled(false);
+
+        bDate.setEnabled(false);
+        diag.setEnabled(false);
+        loc_lab.setEnabled(false);
+    }
+    private void enableAll() {
+        firstName.setEnabled(true);
+        lastName.setEnabled(true);
+        secondName.setEnabled(true);
+
+        incDate.setEnabled(true);
+        oucDate.setEnabled(true);
+        operDate.setEnabled(true);
+
+        histNum.setEnabled(true);
+
+        bDate.setEnabled(true);
+        diag.setEnabled(true);
+        loc_lab.setEnabled(true);
+    }
+    private void minimize() {
+        parent.setSplitPosition(90);
+        hideAll();
+        splitMove.setIcon(VaadinIcons.ARROW_LEFT);
+        isMinimized = true;
+    }
+    private void maximize() {
+        parent.setSplitPosition(70);
+        showAll();
+        splitMove.setIcon(VaadinIcons.ARROW_RIGHT);
+        isMinimized = false;
+    }
+    void setPatient(Patient patient) {
+        maximize();
+
+        this.patient = patient;
+        String nm = patient.getHist_num();
+        if (null == nm) {
+            nm = "";
         }
-        */
+
+        histNum.setValue(nm);
+        firstName.setValue(patient.getFirst_name());
+        lastName.setValue(patient.getSecond_name());
+        secondName.setValue(patient.getPatronic());
+
+        Localisation loc = dictionaryDAO.findLocalisationById(patient.getLoc_loc_id());
+
+        loc_lab.setValue(loc);
+
+        bDate.setValue(patient.getBirth().toLocalDate());
+        incDate.setValue(patient.getIncoming_date().toLocalDate());
+        oucDate.setValue(patient.getOutcoming_date().toLocalDate());
+        operDate.setValue(patient.getOperation_date().toLocalDate());
+
+        diag.setValue(patient.getDiagnos());
+
+        Localisation curLoc = null;
+
+        for (Localisation i : localisations) {
+            if (Objects.equals(i.getLoc_id(), this.patient.getLoc_loc_id())) {
+                curLoc = i;
+                break;
+            }
+        }
+
+        loc_lab.setSelectedItem(curLoc);
+        showAll();
     }
 }

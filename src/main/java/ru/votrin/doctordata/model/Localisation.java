@@ -7,9 +7,14 @@ public class Localisation {
     private Long loc_id;
     private String description;
 
-    public Localisation(Long loc_id, String description) {
+    public Localisation(Long loc_id,
+                        String description) {
         this.loc_id = loc_id;
         this.description = description;
+    }
+
+    public Localisation() {
+
     }
 
     public Long getLoc_id() {

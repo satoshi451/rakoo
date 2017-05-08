@@ -33,7 +33,7 @@ public class Patient {
     private Date outcoming_date;
     private String diagnos;
     private Date operation_date;
-    private Integer hist_num;
+    private String hist_num;
     private Long loc_loc_id;
 
     @Override
@@ -64,7 +64,7 @@ public class Patient {
                    Date outcoming_date,
                    String diagnos,
                    Date operation_date,
-                   Integer hist_num,
+                   String hist_num,
                    Long loc_loc_id) {
         this.ptnt_id = ptnt_id;
         this.first_name = first_name;
@@ -79,6 +79,7 @@ public class Patient {
         this.hist_num = hist_num;
         this.loc_loc_id = loc_loc_id;
     }
+
 
     public Long getPtnt_id() {
         return ptnt_id;
@@ -160,11 +161,11 @@ public class Patient {
         this.operation_date = operation_date;
     }
 
-    public Integer getHist_num() {
+    public String getHist_num() {
         return hist_num;
     }
 
-    public void setHist_num(Integer hist_num) {
+    public void setHist_num(String hist_num) {
         this.hist_num = hist_num;
     }
 
