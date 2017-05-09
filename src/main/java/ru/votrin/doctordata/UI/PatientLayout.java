@@ -151,7 +151,6 @@ public class PatientLayout extends VerticalLayout {
             } else {
                 Notification.show("Пациент не выбран", Notification.Type.WARNING_MESSAGE);
             }
-
         });
         disableAll();
         hideAll();
@@ -268,6 +267,7 @@ public class PatientLayout extends VerticalLayout {
         diag.setEnabled(true);
         loc_lab.setEnabled(true);
     }
+
     private void minimize() {
         parent.setSplitPosition(90);
         hideAll();

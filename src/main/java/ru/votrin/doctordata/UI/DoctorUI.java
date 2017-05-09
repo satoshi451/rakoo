@@ -57,6 +57,7 @@ public class DoctorUI extends UI{
     protected void init(VaadinRequest request) {
         addWindow(confirmDialog);
         grid = new Grid<>(Patient.class);
+
         grid.setColumnOrder("hist_num", "first_name", "patronic", "second_name", "birth", "sex", "diagnos", "incoming_date", "outcoming_date", "operation_date");
         grid.getColumn("first_name").setCaption("Имя");
         grid.getColumn("patronic").setCaption("Отчество");
@@ -69,17 +70,25 @@ public class DoctorUI extends UI{
         grid.getColumn("operation_date").setCaption("Дата операции");
         grid.getColumn("hist_num").setCaption("№ и.б.");
 
-        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
 
         grid.removeColumn("ptnt_id");
         grid.removeColumn("loc_loc_id");
         grid.setWidth("100%");
 
+        ReportWindow repW = new ReportWindow(this);
+        addWindow(repW);
+        repW.setVisible(false);
+/*
         grid.addSelectionListener(event -> {
             Set<Patient> items = event.getAllSelectedItems();
-            confirmDialog.setItems(items);
-            confirmDialog.show();
+
+            Button repBtn = confirmDialog.getReportButton();
+            repBtn.addClickListener(click -> repW.show(items));
+            System.out.println(items.size() + ", " + items);
+            confirmDialog.focus();
         });
+*/
         HorizontalLayout searchLine = new HorizontalLayout();
 
         TextField filter = new TextField();
@@ -95,8 +104,10 @@ public class DoctorUI extends UI{
         searchLine.addComponent(addButton);
         searchLine.setWidth("100%");
 
+        /*
         DoctorMenu menuBar = new DoctorMenu();
         menuBar.setWidth("100%");
+        */
 
         VerticalLayout dataLayout = new VerticalLayout();
 
@@ -110,7 +121,6 @@ public class DoctorUI extends UI{
         content.setSizeFull();
 
         patientDataLayout = new PatientLayout(this, dictionaryDAO, patientDAO);
-
 
         content.addComponent(patientDataLayout);
 
@@ -275,6 +285,20 @@ public class DoctorUI extends UI{
     }
     public float getSplitPosition() {
         return content.getSplitPosition();
+    }
+
+    private class ReportWindow extends Window{
+        public ReportWindow(DoctorUI parent) {
+            setContent(new PatientLayout(parent, dictionaryDAO, patientDAO));
+            setWidth("400px");
+            setHeight("100%");
+
+        }
+
+        public void show(Set<Patient> items) {
+            this.setVisible(true);
+            System.out.println(items);
+        }
     }
 }
 
