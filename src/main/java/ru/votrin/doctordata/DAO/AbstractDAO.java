@@ -13,7 +13,7 @@ public abstract class AbstractDAO {
 
     @Autowired
     private void setDataSource(DataSource dataSource) {
-
+        jdbcTemplate.setDataSource(dataSource);
     }
 
 }
